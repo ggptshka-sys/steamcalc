@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steam Market Arbitrage | Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .neon-border {
+            box-shadow: 0 0 5px rgba(139, 92, 246, 0.2), 0 0 10px rgba(139, 92, 246, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .neon-border:focus-within {
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.5), 0 0 30px rgba(139, 92, 246, 0.3);
+            border-color: #a78bfa;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Custom Input Styles */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body
+    class="min-h-screen flex flex-col items-center justify-center bg-[url('https://images.unsplash.com/photo-1614726365723-49cfae973cbb?q=80&w=2832&auto=format&fit=crop')] bg-cover bg-center bg-no-repeat bg-fixed py-8">
+
+    <!-- Overlay -->
+    <div class="absolute inset-0 bg-slate-900/90 z-0"></div>
+
+    <div class="relative z-10 w-full max-w-5xl p-4 md:p-8 flex-grow flex flex-col justify-center">
+
+        <!-- Header -->
+        <header class="mb-8 text-center">
+            <h1
+                class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 tracking-tight uppercase italic">
+                Steam Market Arbitrage
+            </h1>
+            <p class="text-slate-400 mt-2 text-sm mono">Arbitrage Calculator v1.0</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- INPUT SECTION -->
+            <div class="lg:col-span-7 space-y-6">
+
+                <!-- Step 1: Buying -->
+                <div class="glass-panel p-6 rounded-2xl neon-border border border-slate-700">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-cyan-400 flex items-center gap-2">
+                            <span class="bg-cyan-500/20 text-cyan-300 p-1 px-2 rounded text-xs">01</span>
+                            Покупка (Сайт)
+                        </h2>
+                        <select id="platformSelect"
+                            class="bg-slate-800 border border-slate-600 text-xs rounded px-2 py-1 text-slate-300 focus:outline-none">
+                            <option>Lis-Skins</option>
+                            <option>CS.Money</option>
+                            <option>Avan.Market</option>
+                            <option>Market.CSGO</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1 ml-1">Цена за 1 шт. (RUB)</label>
+                            <input type="number" id="buyPrice" placeholder="0.00"
+                                class="w-full bg-slate-800/50 border border-slate-600 rounded-xl p-3 text-white focus:outline-none focus:border-cyan-500 transition-colors text-lg mono font-bold placeholder-slate-600">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1 ml-1">Количество</label>
+                            <input type="number" id="quantity" value="1"
+                                class="w-full bg-slate-800/50 border border-slate-600 rounded-xl p-3 text-white focus:outline-none focus:border-cyan-500 transition-colors text-lg mono font-bold placeholder-slate-600">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Selling -->
+                <div class="glass-panel p-6 rounded-2xl neon-border border border-slate-700">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-purple-400 flex items-center gap-2">
+                            <span class="bg-purple-500/20 text-purple-300 p-1 px-2 rounded text-xs">02</span>
+                            Продажа (Steam)
+                        </h2>
+                        <div class="text-xs text-slate-500 bg-slate-800 px-2 py-1 rounded border border-slate-700">
+                            Комиссия ~13.04% включена
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1 ml-1">Цена лота на Торговой Площадке
+                                (RUB)</label>
+                            <div class="relative">
+                                <input type="number" id="steamPrice" placeholder="0.00"
+                                    class="w-full bg-slate-800/50 border border-slate-600 rounded-xl p-3 text-white focus:outline-none focus:border-purple-500 transition-colors text-lg mono font-bold placeholder-slate-600">
+                                <div class="absolute right-3 top-3.5 text-xs text-slate-500 pointer-events-none">
+                                    Ты получишь: <span id="steamReceiveSingle" class="text-slate-300">0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Target (Optional) -->
+                <div class="glass-panel p-4 rounded-2xl border border-slate-700/50">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-emerald-500/10 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-400" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 00-1-1H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 10-2 0v2a1 1 0 102 0V9z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-xs text-slate-400">Нужно на баланс Steam (Цель)</label>
+                            <input type="number" id="targetAmount" placeholder="Например: 1500"
+                                class="w-full bg-transparent border-b border-slate-600 py-1 text-sm text-white focus:outline-none focus:border-emerald-500 mono">
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs text-slate-500">Нужно купить шт:</div>
+                            <div id="targetQty" class="text-emerald-400 font-bold mono text-lg">0</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RESULTS SECTION -->
+            <div class="lg:col-span-5">
+                <div
+                    class="h-full glass-panel rounded-2xl border border-slate-700 p-6 flex flex-col justify-between relative overflow-hidden">
+
+                    <!-- Background Glow -->
+                    <div id="glowEffect"
+                        class="absolute top-0 right-0 w-64 h-64 bg-purple-600/20 blur-[80px] rounded-full -mr-16 -mt-16 transition-colors duration-500">
+                    </div>
+
+                    <div>
+                        <h3 class="text-slate-400 text-sm uppercase tracking-wider mb-6">Результаты расчета</h3>
+
+                        <!-- Main Profit Display -->
+                        <div class="mb-8">
+                            <div class="text-xs text-slate-500 mb-1">Чистый профит (RUB)</div>
+                            <div id="totalProfit"
+                                class="text-5xl md:text-6xl font-black text-white mono tracking-tighter transition-all">
+                                0.00
+                            </div>
+                            <div id="profitLabel"
+                                class="text-sm font-semibold mt-2 inline-block px-2 py-1 rounded bg-slate-800 text-slate-400">
+                                Нейтрально
+                            </div>
+                        </div>
+
+                        <!-- Stats Grid -->
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
+                                <div class="text-xs text-slate-500">Расходы (RUB)</div>
+                                <div id="totalSpend" class="text-lg font-bold text-white mono">0.00</div>
+                            </div>
+                            <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
+                                <div class="text-xs text-slate-500">Баланс Steam (RUB)</div>
+                                <div id="steamNetTotal" class="text-lg font-bold text-cyan-300 mono">0.00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ROI Indicator -->
+                    <div class="border-t border-slate-700 pt-6">
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <div class="text-xs text-slate-400 uppercase tracking-widest mb-1">Эффективность (ROI)
+                                </div>
+                                <div class="text-xs text-slate-600 max-w-[150px]">
+                                    Отношение профита к затратам в %
+                                </div>
+                            </div>
+                            <div id="roiValue" class="text-4xl font-black text-slate-600 mono">
+                                0.0%
+                            </div>
+                        </div>
+
+                        <!-- ROI Bar -->
+                        <div class="w-full h-2 bg-slate-800 rounded-full mt-4 overflow-hidden">
+                            <div id="roiBar"
+                                class="h-full w-0 bg-gradient-to-r from-slate-600 to-slate-400 transition-all duration-500">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center">
+            <a href="mailto:ggptshka@gmail.com"
+                class="text-slate-500 text-xs hover:text-cyan-400 transition-colors border-b border-transparent hover:border-cyan-400 pb-0.5">
+                Написать в поддержку
+            </a>
+        </footer>
+
+    </div>
+
+    <script>
+        // Elements
+        const buyPriceInput = document.getElementById('buyPrice');
+        const quantityInput = document.getElementById('quantity');
+        const steamPriceInput = document.getElementById('steamPrice');
+        const targetAmountInput = document.getElementById('targetAmount');
+
+        const steamReceiveSingleEl = document.getElementById('steamReceiveSingle');
+        const totalProfitEl = document.getElementById('totalProfit');
+        const profitLabelEl = document.getElementById('profitLabel');
+        const totalSpendEl = document.getElementById('totalSpend');
+        const steamNetTotalEl = document.getElementById('steamNetTotal');
+        const roiValueEl = document.getElementById('roiValue');
+        const roiBarEl = document.getElementById('roiBar');
+        const glowEffectEl = document.getElementById('glowEffect');
+        const targetQtyEl = document.getElementById('targetQty');
+
+        // Logic
+        function calculate() {
+            const buyPrice = parseFloat(buyPriceInput.value) || 0;
+            const quantity = parseFloat(quantityInput.value) || 0;
+            const steamListingPrice = parseFloat(steamPriceInput.value) || 0;
+            const targetAmount = parseFloat(targetAmountInput.value) || 0;
+
+            // 1. Calculate Steam Net (Seller receives approx listing / 1.15)
+            // Precise formula used by traders often: Listing * 0.8696 or simply Listing / 1.15
+            const steamNetSingle = steamListingPrice / 1.15;
+
+            // 2. Totals
+            const totalSpend = buyPrice * quantity;
+            const totalSteamNet = steamNetSingle * quantity;
+            const profit = totalSteamNet - totalSpend;
+
+            // 3. ROI
+            let roi = 0;
+            if (totalSpend > 0) {
+                roi = (profit / totalSpend) * 100;
+            }
+
+            // 4. Target Calculation
+            if (targetAmount > 0 && steamNetSingle > 0) {
+                const needed = Math.ceil(targetAmount / steamNetSingle);
+                targetQtyEl.innerText = needed;
+            } else {
+                targetQtyEl.innerText = '0';
+            }
+
+            // UI Updates
+            steamReceiveSingleEl.innerText = steamNetSingle.toFixed(2);
+            totalSpendEl.innerText = totalSpend.toFixed(2);
+            steamNetTotalEl.innerText = totalSteamNet.toFixed(2);
+
+            // Format Profit (+ sign)
+            const profitStr = profit > 0 ? `+${profit.toFixed(2)}` : profit.toFixed(2);
+            totalProfitEl.innerText = profitStr;
+            roiValueEl.innerText = `${roi.toFixed(1)}%`;
+
+            // Visual Styling based on Profit
+            if (profit > 0) {
+                totalProfitEl.className = "text-5xl md:text-6xl font-black text-emerald-400 mono tracking-tighter transition-all";
+                profitLabelEl.className = "text-sm font-semibold mt-2 inline-block px-2 py-1 rounded bg-emerald-500/20 text-emerald-300";
+                profitLabelEl.innerText = "PROFIT (STONKS)";
+
+                roiValueEl.className = "text-4xl font-black text-emerald-400 mono";
+                roiBarEl.className = "h-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-500";
+                glowEffectEl.className = "absolute top-0 right-0 w-64 h-64 bg-emerald-600/20 blur-[80px] rounded-full -mr-16 -mt-16 transition-colors duration-500";
+
+                // Bar width limited to 100% visually
+                const barWidth = Math.min(Math.abs(roi) * 2, 100);
+                roiBarEl.style.width = `${barWidth}%`;
+
+            } else if (profit < 0) {
+                totalProfitEl.className = "text-5xl md:text-6xl font-black text-rose-500 mono tracking-tighter transition-all";
+                profitLabelEl.className = "text-sm font-semibold mt-2 inline-block px-2 py-1 rounded bg-rose-500/20 text-rose-300";
+                profitLabelEl.innerText = "LOSS (NOT STONKS)";
+
+                roiValueEl.className = "text-4xl font-black text-rose-500 mono";
+                roiBarEl.className = "h-full bg-gradient-to-r from-rose-600 to-rose-400 transition-all duration-500";
+                glowEffectEl.className = "absolute top-0 right-0 w-64 h-64 bg-rose-600/20 blur-[80px] rounded-full -mr-16 -mt-16 transition-colors duration-500";
+
+                roiBarEl.style.width = `100%`; // Full red bar for loss
+            } else {
+                // Neutral
+                totalProfitEl.className = "text-5xl md:text-6xl font-black text-white mono tracking-tighter transition-all";
+                profitLabelEl.className = "text-sm font-semibold mt-2 inline-block px-2 py-1 rounded bg-slate-800 text-slate-400";
+                profitLabelEl.innerText = "Нейтрально";
+
+                roiValueEl.className = "text-4xl font-black text-slate-600 mono";
+                roiBarEl.className = "h-full bg-gradient-to-r from-slate-600 to-slate-400 transition-all duration-500";
+                glowEffectEl.className = "absolute top-0 right-0 w-64 h-64 bg-purple-600/20 blur-[80px] rounded-full -mr-16 -mt-16 transition-colors duration-500";
+                roiBarEl.style.width = `0%`;
+            }
+        }
+
+        // Listeners
+        [buyPriceInput, quantityInput, steamPriceInput, targetAmountInput].forEach(input => {
+            input.addEventListener('input', calculate);
+        });
+
+        // Initialize
+        calculate();
+
+    </script>
+</body>
+
+</html>
